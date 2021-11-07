@@ -1,108 +1,166 @@
-class TreeNode(object):
+
+from stack.StackOnList import StackOnList
+
+
+
+class TreeN(object):
     def __init__(self, value):
-        self.value = value
-        self.l = None
-        self.r = None
-        self.h = 1
+        self.intitValue = value
+        self.left = None
+        self.right = None
+        self.height = 1
 
 
-class AVLTree(object):
+class Avl(object):
 
-    def insert(self, root, key):
+    def adde(self, r, key):
 
-        if not root:
-            return TreeNode(key)
-        elif key < root.value:
-            root.l = self.insert(root.l, key)
+        if not r:
+            return TreeN(key)
+        elif key < r.intitValue:
+            r.left = self.adde(r.left, key)
         else:
-            root.r = self.insert(root.r, key)
+            r.right = self.adde(r.right, key)
+        r.height = 1 + max(self.findH(r.left),
+                           self.findH(r.right))
 
-        root.h = 1 + max(self.getHeight(root.l),
-                         self.getHeight(root.r))
+        b = self.getb(r)
 
-        b = self.getBal(root)
+        if b > 1 and key < r.left.intitValue:
+            return self.right(r)
 
-        if b > 1 and key < root.l.value:
-            return self.rRotate(root)
+        if b < -1 and key > r.right.intitValue:
+            return self.left(r)
 
-        if b < -1 and key > root.r.value:
-            return self.lRotate(root)
+        if b > 1 and key > r.left.intitValue:
+            r.left = self.left(r.left)
+            return self.right(r)
 
-        if b > 1 and key > root.l.value:
-            root.l = self.lRotate(root.l)
-            return self.rRotate(root)
+        if b < -1 and key < r.right.intitValue:
+            r.right = self.right(r.right)
+            return self.left(r)
+        return r
 
-        if b < -1 and key < root.r.value:
-            root.r = self.rRotate(root.r)
-            return self.lRotate(root)
+    def left(self, b):
+        a = b.right
+        t = a.left
+        a.left = b
+        b.right = t
+        b.height = 1 + max(self.findH(b.left),
+                           self.findH(b.right))
+        a.height = 1 + max(self.findH(a.left),
+                           self.findH(a.right))
+        return a
 
-        return root
+    def right(self, b):
+        a = b.left
+        tr = a.right
+        a.right = b
+        b.left = tr
+        b.height = 1 + max(self.findH(b.left),
+                           self.findH(b.right))
+        a.height = 1 + max(self.findH(a.left),
+                           self.findH(a.right))
+        return a
 
-    def lRotate(self, z):
-        y = z.r
-        T2 = y.l
-        y.l = z
-        z.r = T2
-        z.h = 1 + max(self.getHeight(z.l),
-                      self.getHeight(z.r))
-
-        y.h = 1 + max(self.getHeight(y.l),
-                      self.getHeight(y.r))
-
-        return y
-
-    def rRotate(self, z):
-
-        y = z.l
-        T3 = y.r
-
-        y.r = z
-        z.l = T3
-
-        z.h = 1 + max(self.getHeight(z.l),
-                      self.getHeight(z.r))
-        y.h = 1 + max(self.getHeight(y.l),
-                      self.getHeight(y.r))
-
-        return y
-
-    def getHeight(self, root):
-        if not root:
+    def findH(self, r):
+        if not r:
             return 0
+        return r.height
 
-        return root.h
-
-    def getBal(self, root):
-        if not root:
+    def getb(self, r):
+        if not r:
             return 0
+        return self.findH(r.left) - self.findH(r.right)
 
-        return self.getHeight(root.l) - self.getHeight(root.r)
-
-    def preOrder(self, root):
-
-        if not root:
+    @staticmethod
+    def porder(r):
+        result = []
+        if r is None:
             return
+        mass = []
+        mass.append(r)
+        while (len(mass) > 0):
+            n = mass.pop()
+            result.append(n.intitValue)
 
-        print("{0} ".format(root.value), end="")
-        self.preOrder(root.l)
-        self.preOrder(root.r)
+            if n.right is not None:
+                mass.append(n.right)
+            if n.left is not None:
+                mass.append(n.left)
+        return result
+    @staticmethod
+    def iorder(r):
+        now = r
+        arr = []
+        result = []
 
+        while True:
+            if now is not None:
+                arr.append(now)
+                now = now.left
 
+            elif (arr):
+                now = arr.pop()
+                result.append(now.intitValue)
+                now = now.right
+            else:
+                break
+        print()
+        return result
+    @staticmethod
+    def posorder(r):
+        myStack = []
+        result = []
+        while (True):
+            while (r != None):
+                myStack.append(r)
+                myStack.append(r)
+                r = r.left
+            if (len(myStack) == 0):
+                return result
+            r = myStack.pop()
+            if len(myStack) > 0 and myStack[-1] == r:
+                r = r.right
+            else:
+                result.append(r.intitValue)
+                r = None
+
+    def level(self, r, level, result):
+        if r is None:
+            return
+        if level == 1:
+            result.append(r.intitValue)
+        elif level > 1:
+            self.level(r.left, level - 1, result)
+            self.level(r.right, level - 1, result)
+
+    def level_ord(self, r):
+        result = []
+        height = self.findH(r)
+        for i in range(1, height + 1):
+            self.level(r, i, result)
+        return result
+    @staticmethod
+    def sort(mas):
+        T = Avl()
+        a = None
+        for i in mas:
+            a = T.adde(a, i)
+        return Avl.iorder(r)
 if __name__ == "__main__":
-    Tree = AVLTree()
-    root = None
+    Tree = Avl()
+    r = None
+    r = Tree.adde(r, 1)
+    r = Tree.adde(r, 2)
+    r = Tree.adde(r, 3)
+    r = Tree.adde(r, 4)
+    r = Tree.adde(r, 5)
+    r = Tree.adde(r, 6)
+    print(Avl.iorder(r))
+    print(Avl.porder(r))
+    print(Avl.posorder(r))
+    print(Tree.level_ord(r))
+    mas = [10,9,8,7,6,5,4,3,2,1]
+    print(Avl.sort(mas))
 
-    root = Tree.insert(root, 1)
-    root = Tree.insert(root, 2)
-    root = Tree.insert(root, 3)
-    root = Tree.insert(root, 4)
-    root = Tree.insert(root, 5)
-    root = Tree.insert(root, 6)
-
-    # Preorder Traversal
-    print("Preorder traversal of the",
-          "constructed AVL tree is")
-    Tree.preOrder(root)
-    print()
-
-    
